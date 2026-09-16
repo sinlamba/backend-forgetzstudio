@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String               @id @default(cuid())
+  clerkId      String               @unique
+  email        String               @unique
+  name         String?
+  createAt     DateTime             @default(now())
+  updateAt     DateTime             @updatedAt
+  integration  Integration[]
+  instagramRef InstagramContainer[]
+  Gallery      Gallery[]
+}
+
+model Integration {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  accessToken       String
+  refreshToken      String?
+  providerAccountId String?
+  createAt          DateTime @default(now())
+  updateAt          DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [clerkId])
+
+  @@unique([userId, provider])
+}
+
+model InstagramContainer {
+  id              String    @id @default(cuid())
+  userId          String
+  instagramUserId String
+  containerId     String    @unique
+  publish         Boolean?
+  scheduledAt     DateTime?
+  status          Boolean?
+  createAt        DateTime  @default(now())
+  updateAt        DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [clerkId])
+}
+
+model Gallery {
+  id        String   @id @default(cuid())
+  userId    String
+  videoUrl  String 
+  instagram Boolean?
+  facebook  Boolean?
+  tiktok    Boolean?
+  threads   Boolean?
+  createAt  DateTime @default(now())
+  updateAt  DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [clerkId])
+}
