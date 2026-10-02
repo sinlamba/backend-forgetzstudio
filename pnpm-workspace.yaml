@@ -1,7 +1,0 @@
-allowBuilds:
-  '@firebase/util': true
-  onnxruntime-node: true
-  protobufjs: true
-  sharp: true
-  tesseract.js: true
-  unrs-resolver: true
