@@ -33,7 +33,7 @@ async handleClerkWebhook(data: WebhookEvent) {
         .filter(Boolean)
         .join(' ');
 
-      console.log("SEBELUM CREATE USER");
+      console.log("SEBELUM CREATE USERs");
 
       try {
         const result = await this.prisma.user.create({
