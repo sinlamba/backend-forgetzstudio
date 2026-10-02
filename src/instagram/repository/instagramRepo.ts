@@ -47,7 +47,7 @@ export class InstagramRepository implements InstagramRepoPort {
 
     async saveTokensInstagram({ userId, access_token, platform, platformUserId, refreshToken, expiresAt }: saveInstagramAccessToken): Promise<saveTokenInstagramResult> {
 
-        return this.Prisma.PlatformIntegration.create({
+        return this.Prisma.PlatformIntegrations.create({
             data: {
                 userId: userId,
                 accessToken: access_token,
@@ -102,7 +102,7 @@ export class InstagramRepository implements InstagramRepoPort {
         });
     }
     async findAccessTokenInstagram(userId: string, platform: provider): Promise<getTokenResultType> {
-        const res = await this.Prisma.PlatformIntegration.findUnique({
+        const res = await this.Prisma.PlatformIntegrations.findUnique({
             where: {
                   userId_platform: {
                     userId: userId,
@@ -149,7 +149,7 @@ export class InstagramRepository implements InstagramRepoPort {
     }
 
     async findManyAccessTokenInstagram(userId: string[]) {
-        const data = await this.Prisma.PlatformIntegration.findMany({
+        const data = await this.Prisma.PlatformIntegrations.findMany({
             where: {
                 platform: "Instagram",
                 userId: {

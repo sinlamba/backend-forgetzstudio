@@ -15,11 +15,11 @@ export class gmailRepository implements gmailRepoPort {
     async saveTokens(props: saveTokens): Promise<saveTokensResult> {
 
 
-        const res = await this.prisma.PlatfromIntegration.create({
+        const res = await this.prisma.PlatformIntegrations.create({
             data: {
                 userId: props.userId,
-                platfromAccountId: props.platfromUserId,
-                provider: props.provider,
+                platformUserId: props.platfromUserId,
+                platform: props.provider,
                 accessToken: props.accessToken,
                 refreshToken: props.refreshToken
 
@@ -32,7 +32,7 @@ export class gmailRepository implements gmailRepoPort {
 
         return {
             userId: res.id,
-            platfromUserId: res.platfromAccountId!,
+            platfromUserId: res.platformUserId!,
             provider: "Github"
         }
     }
@@ -40,11 +40,11 @@ export class gmailRepository implements gmailRepoPort {
 
     async findUnique(id: string, provider: provider) {
 
-        const res = await this.prisma.PlatfromIntegration.findUnique({
+        const res = await this.prisma.PlatformIntegrations.findUnique({
             where: {
                   userId_platform: {
                     userId: id,
-                    provider: provider
+                    platform: provider
                 }
             }
         })

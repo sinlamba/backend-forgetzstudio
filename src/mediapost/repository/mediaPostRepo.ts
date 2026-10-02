@@ -31,17 +31,17 @@ export class MediaPostRepo {
 
   async getAcessTokenFromDb({
     userId,
-    provider,
+    platform,
   }: {
     userId: string;
-    provider: provider;
+    platform: provider;
   }) {
     const result =
-      await this.Prisma.PlatfromIntegration.findUnique({
+      await this.Prisma.PlatformIntegrations.findUnique({
         where: {
             userId_platform: {
             userId,
-            provider,
+            platform,
           },
         },
       });
@@ -57,13 +57,13 @@ export class MediaPostRepo {
 
   async getPlatformIntegration(
     userId: string,
-    provider: string,
+    platform: string,
   ) {
-    return this.Prisma.PlatfromIntegration.findUnique({
+    return this.Prisma.PlatformIntegrations.findUnique({
       where: {
           userId_platform: {
           userId,
-          provider,
+          platform,
         },
       },
     });
@@ -71,25 +71,25 @@ export class MediaPostRepo {
 
   async saveContainerId({
     containerId,
-    platfromUserId,
+    platformUserId,
     userId,
-    platfrom,
+    platform,
     publish,
     scheduledAt,
   }: {
     containerId: string;
-    platfromUserId: string;
+    platformUserId: string;
     userId: string;
-    platfrom: provider;
+    platform: provider;
     publish: boolean;
     scheduledAt: Date;
   }) {
     return this.Prisma.ContainerId.create({
       data: {
         containerId,
-        platfromUserId,
+        platformUserId,
         userId,
-        platfrom,
+        platform,
         publish,
         scheduledAt,
       },
@@ -99,22 +99,22 @@ export class MediaPostRepo {
 
   async updatePlatformToken({
   userId,
-  provider,
+  platform,
   accessToken,
   refreshToken,
   expiresAt,
 }: {
   userId: string;
-  provider: provider;
+  platform: provider;
   accessToken: string;
   refreshToken?: string;
   expiresAt?: Date;
 }) {
-  return this.Prisma.PlatfromIntegration.update({
+  return this.Prisma.PlatformIntegrations.update({
     where: {
         userId_platform: {
         userId,
-        provider,
+        platform,
       },
     },
     data: {

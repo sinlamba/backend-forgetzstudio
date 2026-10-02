@@ -11,7 +11,7 @@ export class TiktokRepository implements TiktokRepoPort {
   async saveAccessToken(
     props: SaveAccessTokenTiktok,
   ): Promise<Record<string, string | boolean>> {
-    const response = await this.prisma.PlatformIntegration.create({
+    const response = await this.prisma.PlatformIntegrations.create({
       data: {
         userId: props.id,
         platform: props.platform,
@@ -62,7 +62,7 @@ export class TiktokRepository implements TiktokRepoPort {
   }
 
   async chechkConnection({ userId, provider }: { userId: string, provider: string }) {
-    return this.prisma.PlatformIntegration.findUnique({
+    return this.prisma.PlatformIntegrations.findUnique({
       where: {
           userId_platform: {
           userId: userId,
@@ -133,7 +133,7 @@ export class TiktokRepository implements TiktokRepoPort {
 
 
   async findManyAccessTokenTiktok(userId: string[]) {
-    const data = await this.prisma.PlatformIntegration.findMany({
+    const data = await this.prisma.PlatformIntegrations.findMany({
       where: {
         platform: "Tiktok",
         userId: {
@@ -160,7 +160,7 @@ export class TiktokRepository implements TiktokRepoPort {
     refreshToken?: string;
     expiresAt?: Date;
   }) {
-    return this.prisma.PlatformIntegration.update({
+    return this.prisma.PlatformIntegrations.update({
       where: {
           userId_platform: {
           userId,

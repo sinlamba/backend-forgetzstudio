@@ -60,7 +60,7 @@ export class DatabaseService
     return this.prisma.user;
   }
 
-  get PlatformIntegration() {
+  get PlatformIntegrations() {
     return this.prisma.platformIntegration;
   }
 

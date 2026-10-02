@@ -9,10 +9,6 @@ import axios from 'axios';
 import { Apikey } from '../../common/configEnv/configEnv.service';
 import { InstagramClientPort } from '../port/instagramClientPort';
 import { InstagramMediaResponse } from '../types/mediaType';
-import { ThreadsService } from '../../threads/threads.service';
-import { MappersThreadsGlobal } from '../../threads/mappers/threads.mapper';
-
-
 
 
 
@@ -282,7 +278,7 @@ async refreshAccessToken(
           );
 
           const postData = await this.publishExec({
-            instagramUserId: post.platfromUserId,
+            instagramUserId: post.platformUserId,
             containerId: post.containerId,
             accessToken,
           });

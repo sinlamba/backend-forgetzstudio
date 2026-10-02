@@ -14,7 +14,7 @@ export class githubRepository implements githubRepoPort {
     
     async saveToken({ userId, accessToken, refreshToken, provider , platfromUserId}: saveTokens) {
                 
-        await this.prisma.PlatformIntegration.create({
+        await this.prisma.PlatformIntegrations.create({
             data: {
                 userId: userId,
                 platform: provider,
@@ -27,7 +27,7 @@ export class githubRepository implements githubRepoPort {
     }
 
     async findUnique(userId: string, provider: string) {
-        return await this.prisma.PlatformIntegration.findUnique({
+        return await this.prisma.PlatformIntegrations.findUnique({
             where: {
                 userId_platform: {
                     userId: userId,

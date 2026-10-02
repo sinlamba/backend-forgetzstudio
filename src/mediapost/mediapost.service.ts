@@ -106,17 +106,17 @@ export class MediapostService {
                       ...props,
                       userId,
                       accessToken,
-                      platfromUserId:
+                     platfromUserId:
                           integration.platformUserId!,
                   });
 
               // Save container hanya di sini.
               await this.mediaRepo.saveContainerId({
                   containerId: response.id,
-                  platfromUserId:
+                  platformUserId:
                       integration.platformUserId!,
                   userId,
-                  platfrom: 'Instagram',
+                  platform: 'Instagram',
                   publish: false,
                   scheduledAt: scheduleAt,
               });
@@ -160,7 +160,7 @@ export class MediapostService {
                           ...props,
                           userId,
                           accessToken,
-                          platfromUserId:
+                         platfromUserId:
                               integration.platformUserId!,
                       },
                   );
@@ -172,10 +172,10 @@ export class MediapostService {
 
               await this.mediaRepo.saveContainerId({
                   containerId: response.id,
-                  platfromUserId:
+                  platformUserId:
                       integration.platformUserId!,
                   userId,
-                  platfrom: 'Threads',
+                  platform: 'Threads',
                   publish: false,
                   scheduledAt: scheduleAt,
               });
@@ -217,9 +217,9 @@ export class MediapostService {
 
             await this.mediaRepo.saveContainerId({
               containerId: response.publish_id,
-              platfromUserId: integration.platformUserId!,
+              platformUserId: integration.platformUserId!,
               userId,
-              platfrom: 'Tiktok',
+              platform: 'Tiktok',
               publish: false,
               scheduledAt: scheduleAt,
             });
