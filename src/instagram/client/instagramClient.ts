@@ -235,12 +235,11 @@ async refreshAccessToken(
         `Found ${containers.length} unpublished Instagram containers`,
       );
 
-      // 2. Ambil semua userId
-      const userIds = [
-        ...new Set(
-          containers.map((item) => item.userId),
-        ),
-      ]; 
+   const userIds: string[] = [
+  ...new Set(
+    containers.map((item) => item.userId),
+  ),
+];
 
       // 3. Ambil semua token sekaligus
       const findTokens =
@@ -251,14 +250,14 @@ async refreshAccessToken(
       console.log(
         `Found ${findTokens.length} Instagram access tokens`,
       );
-
-      // 4. Buat Map agar pencarian token O(1)
-      const tokenMap = new Map(
-        findTokens.map((token) => [
-          token.userId,
-          token.accessToken,
-        ]),
-      );
+const tokenMap = new Map<string, string>(
+  findTokens.map(
+    (token): [string, string] => [
+      token.userId,
+      token.accessToken,
+    ],
+  ),
+);
 
       // 5. Proses setiap container
       for (const post of containers) {
