@@ -1,0 +1,1 @@
+export type provider  =   "Gmail" | "Tiktok" | "Instagram" | "Facebook " | "Threads" | "Gmail" | "Youtube" | "Github"

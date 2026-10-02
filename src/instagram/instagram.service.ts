@@ -12,12 +12,12 @@ import {
 } from './auth/oAuthProvider';
 
 import { Apikey } from '../common/configEnv/configEnv.service';
-import { containerId, getTokenResultType, provider, saveInstagramAccessToken, saveLinkVideo } from './types';
-import { InstagramRepository } from './repository/instagram.repo';
-import { InstagramClient } from './client/instagram.client';
-import type { InstagramPort } from './port/instagram.port';
-import { INSTAGRAM_PORT } from './port/instagram.port';
-import { REPO_PORT, RepositoryPort } from './port/repository.port';
+import { createIgContainerId, getTokenResultType, provider, saveContainerId, saveInstagramAccessToken, saveLinkVideo } from './types';
+import { InstagramRepository } from './repository/instagramRepo';
+import { InstagramClient } from './client/instagramClient';
+import { CLIENT_PORT, type InstagramClientPort } from './port/instagramClientPort';
+import { InstagramRepoPort, REPO_PORT } from './port/instagramRepoPort';
+
 
 @Injectable()
 export class InstagramService {
@@ -28,13 +28,14 @@ export class InstagramService {
 
 
     // DEPEDENCY INJECTION INVERSION
-    @Inject(INSTAGRAM_PORT)
-    private readonly instagramClients: InstagramPort,
+    @Inject(CLIENT_PORT)
+    private readonly instagramClients: InstagramClientPort,
 
 
 
     @Inject(REPO_PORT)
-    private readonly instagramRepositorys: RepositoryPort
+    private readonly instagramRepositorys: InstagramRepoPort,
+
 
   ) { }
 
@@ -70,8 +71,10 @@ export class InstagramService {
     return new OAuthProvider({
       loginType: 'instagram',
       clientId,
+
       clientSecret,
       redirectUri,
+
     });
   }
 
@@ -86,6 +89,14 @@ export class InstagramService {
 
     const authUrl = oauth.getAuthorizationUrl({
       state: userId,
+      scopes: [
+        "instagram_business_basic",
+        "instagram_business_content_publish",
+        "instagram_business_manage_comments",
+        "instagram_business_manage_insights",
+        "instagram_business_manage_messages",
+      ],
+
     });
 
 
@@ -121,11 +132,19 @@ export class InstagramService {
         shortLived.access_token,
       );
 
+
+    const refresh_token = await oauth.refreshLongLivedToken(longLived.access_token)
+
     if (!longLived?.access_token) {
       throw new BadRequestException(
         'Instagram long-lived access token was not returned',
       );
     }
+
+    if (!refresh_token.access_token) {
+      throw new Error("refreshToken not found")
+    }
+
 
     const profile =
       await this.instagramClient.getProfile(
@@ -135,15 +154,20 @@ export class InstagramService {
     return {
       userId: state,
       instagramUserId: profile.user_id,
+      refreshToken: refresh_token.access_token,
       username: profile.username,
       accountType: profile.account_type,
       accessToken: longLived.access_token,
-      expiresIn: longLived.expires_in ?? null,
+      expiresIn: longLived.expires_in,
     };
   }
 
+
+
+
   // DONE MIGRATE TO HXG PTRN
-  async saveTokens({ userId, access_token, provider, providerAccountId }: saveInstagramAccessToken) {
+  async saveTokens({ userId, access_token, provider, platfromAccountId, expiresAt, refreshToken }: saveInstagramAccessToken) {
+
 
 
     return await this.instagramRepositorys.saveTokensInstagram(
@@ -151,7 +175,9 @@ export class InstagramService {
         userId,
         access_token,
         provider,
-        providerAccountId
+        refreshToken,
+        expiresAt,
+        platfromAccountId
       }
     )
 
@@ -194,6 +220,10 @@ export class InstagramService {
     };
   }
 
+  async getUserId(clerkId: string) {
+    return this.instagramRepositorys.getUserId(clerkId)
+  }
+
 
   async getAccessToken(userId: string, provider: provider) {
     return await this.instagramRepostiroy.findAccessTokenInstagram(userId, provider)
@@ -201,24 +231,25 @@ export class InstagramService {
 
 
 
-  async createContainer(userId: string,
-    props: containerId) {
+  async createContainer(
+    props: createIgContainerId) {
 
     const responseContainer = await this.instagramClients.createContainerId(props)
 
     if (!responseContainer.id) {
       throw new BadRequestException("container id fail create")
-    }
+    } 
+
+    console.log(responseContainer.id)
 
 
-
-
-    const result = {
-      userId: userId,
+    const result:saveContainerId = {
+      platfrom: "Instagram",
+      userId: props.userId,
       containerId: responseContainer.id,
-      instagramUserId: props.instagramUserId,
+      platfromUserId: props.platfromUserId,
       publish: false,
-      scheduledAt: props.scheduledAt
+      scheduledAt: props.scheduledAt!
     }
 
 
@@ -226,7 +257,12 @@ export class InstagramService {
     await this.instagramRepostiroy.saveContainerId(result)
 
 
-    return responseContainer
+    return {
+      success: true,
+      data: {
+        instagramContainerId: responseContainer.id,
+      }
+    }
 
   }
 
@@ -252,7 +288,7 @@ export class InstagramService {
     return this.instagramClients.getInstagramContainer(userId)
   }
 
-  async userInstagramContainer(userId: string) {
+  async findUserInstagramContainer(userId: string) {
 
     return await this.instagramClients.findInstagramContainer(userId)
 
@@ -265,33 +301,38 @@ export class InstagramService {
   async getLinkVideoUrl(userId: string) {
     return this.instagramRepositorys.getLinkVideo(userId)
   }
-async getProfile(userId: string) {
+  async getProfile(userId: string) {
     const userData = await this.getAccessToken(
-        userId,
-        "Instagram",
+      userId,
+      "Instagram",
     );
 
     if (!userData?.accessToken) {
-        throw new Error("Instagram access token not found");
+      throw new Error("Instagram access token not found");
     }
 
     const media = await this.instagramClients.getMedia(
-        userData.accessToken,
+      userData.accessToken,
     );
 
 
 
     const profile = await this.instagramClients.getProfile(
-        userData.accessToken,
+      userData.accessToken,
     );
 
     return {
-        profile,
-        media,
+      profile,
+      media,
     };
-}
+  }
+  async updateCrossPlatfrom(id: string) {
 
 
-
+    return this.instagramRepositorys.updateCrossPlatfrom(
+      id,
+      "Instagram"
+    )
+  }
 }
 

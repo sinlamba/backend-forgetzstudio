@@ -3,7 +3,7 @@ export default {
     "no-console": "erorr",
     "no-debugger": "off",
     "no-any": "off",
-    "no-unused-vars" : "off"
+    "no-unused-vars" : "error"
   }
 };
 

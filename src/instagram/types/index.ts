@@ -1,3 +1,4 @@
+import { provider } from "../../common/types"
 
 
 export interface accessTokenResult<T> {
@@ -6,19 +7,21 @@ export interface accessTokenResult<T> {
 }
 
 
-export interface containerId {
+export interface createIgContainerId {
     caption: string
-    instagramUserId: string
+    userId:string
+    platfromUserId: string
     audioName: string
     accessToken: string
     videoUrl: string
-  scheduledAt: Date
+    scheduledAt: Date | null
 }
 
 export interface saveContainerId {
     userId: string
     containerId: string
-    instagramUserId: string
+    platfrom:provider
+    platfromUserId: string
     publish: boolean | null
     scheduledAt: Date
 }
@@ -35,15 +38,14 @@ export interface containerResultType {
 export interface publishExecType {
     instagramUserId: string,
     containerId: string,
-    accessToken: string[],
+    accessToken: string,
 }
 
 
 export interface saveTokenInstagramResult {
     userId: string;
-    provider: string;
-    providerAccountId: string | null;
-    id: string;
+    provider: string | null;
+    platfromAccountId: string | null;
     accessToken: string;
     refreshToken: string | null;
     createAt: Date;

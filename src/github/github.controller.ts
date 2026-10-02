@@ -9,7 +9,7 @@ import { PrismaHelper } from '../common/utils/prismaPattern';
 export class GithubController {
 
 
-    constructor(private githubService: GithubService, private prisma: DatabaseService) { }
+    constructor(private githubService: GithubService) { }
 
 
     @Get("/")
@@ -18,58 +18,82 @@ export class GithubController {
         const result = this.githubService.getSignUrl()
         return res.redirect(result)
     }
-    @Get("callback")
-    async getCallback(
-        @Res() res: Response,
-        @Req() req: Request,
-        @Query("code") code: string,
-    ) {
-        const userId = req.auth.userId;
+ @Get("callback")
+async getCallback(
+    @Res() res: Response,
+    @Req() req: Request,
+    @Query("code") code: string,
+) {
+    const userId =
+        await this.githubService.getUser(req.auth.userId);
 
+    const response =
+        await this.githubService.exchangeCodeForToken(code);
 
-        const { access_token, refresh_token } =
-            await this.githubService.exchangeCodeForToken(code);
+    console.log(
+        "GITHUB OAUTH RESPONSE:",
+        response,
+    );
 
-        if (!access_token ) {
-            throw new UnauthorizedException(
-                "Github oauth failed",
-            );
-        }
+    const {
+        access_token,
+        refresh_token,
+    } = response;
 
-        if(!refresh_token) {
-            // console.log(refresh_token, "Token refreshnya tidak ada yahhh hehehe")
-        }
-
-        const token = access_token;
-
-
-        await this.githubService.saveTokens({
-            userId,
-            accessToken: access_token,
-            refreshToken: refresh_token
-        })
-
-        const githubUser =
-            await this.githubService.getGithubUser(token);
-
-        if (!githubUser) {
-            throw new BadRequestException(
-                "Github user not found",
-            );
-        }
-
-        return res.json(githubUser);
+    if (!access_token) {
+        throw new UnauthorizedException(
+            "Github oauth failed",
+        );
     }
 
+    const githubUser =
+        await this.githubService.getGithubUser(
+            access_token,
+        );
+
+    if (!githubUser) {
+        throw new BadRequestException(
+            "Github user not found",
+        );
+    }
+
+    console.log(
+        "GITHUB USER:",
+        githubUser,
+    );
+
+    await this.githubService.saveTokens({
+        userId,
+
+        accessToken: access_token,
+
+        refreshToken: refresh_token ?? null,
+
+        provider: "Github",
+
+        platfromUserId:
+            String(githubUser.id),
+    });
+
+    return res.json({
+        success: true,
+        githubUser,
+        tokenInfo: {
+            hasAccessToken: Boolean(access_token),
+            hasRefreshToken: Boolean(refresh_token),
+        },
+    });
+}
     @Get("connect")
     async connected(@Req() req: Request) {
-        const userId = req.auth.userId
+        const userId = await this.githubService.getUser(req.auth.userId);
 
         const token = await this.githubService.getTokenFromDb(
-            userId
+            userId,
+            "Github"
         )
-     
-         if(!token) return
+
+        if (!token) return
 
         return {
             connected: Boolean(token?.accessToken)

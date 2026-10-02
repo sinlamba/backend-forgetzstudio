@@ -15,3 +15,11 @@ jadi dia tambahan bisa jadi decorator parameter
 
 disini saya migrate firebase auth dengan clerk dan database saya pake postgree dari neon DB
 
+
+versi sekarang yang kompatibel dengan project
+<!--  "@nestjs/common": "^11.2.3", -->
+
+
+
+kita install versi terbaru untuk websoket
+nest js common v 12.1.2

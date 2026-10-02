@@ -11,7 +11,6 @@ import {
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import axios from "axios";
 import type {
   Request,
   Response,
@@ -20,27 +19,24 @@ import type {
 import { InstagramService } from './instagram.service';
 import { Public } from '../common/decorator/public.decorator';
 import { InstagramPostDTO } from '../common/dto/instagramPostDTO';
-import { InstagramRepository } from './repository/instagram.repo';
+
 import { SaveVideoUrlDto } from './dto/videoUrl';
+import { calculateTokenExpiresAt } from './utils/covertDate';
 
 @Controller('instagram')
 export class InstagramController {
   constructor(
     private readonly instagram: InstagramService,
-    private readonly instagramRepository: InstagramRepository
+
   ) { }
 
-  /**
-   * GET /instagram
-   *
-   * Redirect user ke Instagram OAuth
-   */
   @Get()
-  login(
+  async login(
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const userId = req.auth?.userId;
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
 
     if (!userId) {
       return res.status(401).json({
@@ -65,14 +61,16 @@ export class InstagramController {
       await this.instagram.callback(
         code,
         state,
-      );
-
+      )
+    await this.instagram.updateCrossPlatfrom(state)
     await this.instagram.saveTokens(
       {
         userId: instagram.userId,
         access_token: instagram.accessToken,
         provider: "Instagram",
-        providerAccountId: instagram.instagramUserId
+        expiresAt: calculateTokenExpiresAt(instagram.expiresIn! | 0),
+        refreshToken: instagram.refreshToken,
+        platfromAccountId: instagram.instagramUserId
       }
 
     );
@@ -91,7 +89,8 @@ export class InstagramController {
 
   @Get('connect')
   async connection(@Req() req: Request) {
-    const userId = req.auth.userId
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
 
     const token = await this.instagram.getAccessToken(
       userId,
@@ -133,15 +132,18 @@ export class InstagramController {
     @Req() req: Request,
     @Body() post: InstagramPostDTO,
   ) {
-    const userId = req.auth.userId;
-    const scheduleParse = new Date(post.schedule)
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
+    const scheduleParse = post.scheduledAt
+      ? new Date(post.scheduledAt)
+      : null;
 
     const instagramUser = await this.instagram.getAccessToken(
       userId,
       "Instagram",
     );
 
-    if (!instagramUser?.providerAccountId) {
+    if (!instagramUser.platfromAccountId) {
       throw new NotFoundException(
         "Instagram account not connected",
       );
@@ -154,24 +156,18 @@ export class InstagramController {
     }
 
     try {
-      const result =
-        await this.instagram.createContainer(userId, {
-          instagramUserId:
-            instagramUser.providerAccountId,
+      const result = await this.instagram.createContainer( {
+        platfromUserId: instagramUser.platfromAccountId,
+        videoUrl: post.videoUrl,
+        caption: post.caption,
+        audioName: post.audioName,
+        userId: userId,
+        accessToken: instagramUser.accessToken,
+        scheduledAt: scheduleParse,
+      });
 
-          videoUrl: post.videoUrl,
 
-          caption: post.caption,
-
-          audioName: post.audioName,
-
-          accessToken:
-            instagramUser.accessToken,
-
-          scheduledAt: scheduleParse
-        });
-
-      if (!result?.id) {
+      if (!result.data.instagramContainerId) {
         throw new BadRequestException(
           "Instagram container ID not returned",
         );
@@ -179,15 +175,11 @@ export class InstagramController {
 
       return {
         success: true,
-
         data: {
-          containerId: result.id,
-
-          instagramUserId:
-            instagramUser.providerAccountId,
+          IgcontainerId: result.data.instagramContainerId,
+          instagramUserId: instagramUser.platfromAccountId,
         },
       };
-
     } catch (err: unknown) {
       console.error(
         "Instagram container error:",
@@ -197,12 +189,13 @@ export class InstagramController {
       throw err;
     }
   }
-
   @Get("me")
   async getUser(@Req() req: Request) {
+    const userId = await this.instagram.getUserId(req.auth.userId,)
+
     try {
       return await this.instagram.getProfile(
-        req.auth.userId,
+        userId
       );
     } catch (error) {
       console.error("Instagram error:", error);
@@ -211,55 +204,57 @@ export class InstagramController {
     }
   }
 
-  @Get("containerId")
-  async getContainerPost(
-    @Req() req: Request
-  ) {
-    const userId = req.auth.userId;
+  // @Get("containerId")
+  // async getContainerPost(
+  //   @Req() req: Request
+  // ) {
+  //   const userId = await this.instagram.getUserId(req.auth.userId)
 
-    const token = await this.instagram.getAccessToken(
-      userId,
-      "Instagram"
-    );
 
-    if (!token?.accessToken) {
-      throw new BadRequestException("token not found");
-    }
+  //   const token = await this.instagram.getAccessToken(
+  //     userId,
+  //     "Instagram"
+  //   );
 
-    const containerIds =
-      await this.instagram.getInstagramContainer(userId);
+  //   if (!token?.accessToken) {
+  //     throw new BadRequestException("token not found");
+  //   }
 
-    const result: string[] = [];
+  //   const containerIds =
+  //     await this.instagram.getInstagramContainer(userId);
 
-    for (const containerId of containerIds) {
-      const url = new URL(
-        `https://graph.instagram.com/v25.0/${containerId}`
-      );
+  //   const result: string[] = [];
 
-      url.searchParams.set(
-        "fields",
-        "id,status_code"
-      );
+  //   for (const containerId of containerIds) {
+  //     const url = new URL(
+  //       `https://graph.instagram.com/v25.0/${containerId}`
+  //     );
 
-      url.searchParams.set(
-        "access_token",
-        token.accessToken
-      );
+  //     url.searchParams.set(
+  //       "fields",
+  //       "id,status_code"
+  //     );
 
-      const res = await fetch(url);
+  //     url.searchParams.set(
+  //       "access_token",
+  //       token.accessToken
+  //     );
 
-      const data = await res.json();
+  //     const res = await fetch(url);
 
-      result.push(data);
-    }
+  //     const data = await res.json();
 
-    return result;
-  }
+  //     result.push(data);
+  //   }
+
+  //   return result;
+  // }
 
   @Get("CheckContainerId")
   async getContainerId(@Req() req: Request) {
 
-    const userId = req.auth.userId
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
 
     return this.instagram.getInstagramContainer(userId)
 
@@ -268,9 +263,10 @@ export class InstagramController {
 
   @Get("instagramContainerUser")
   async getInstagramContainerUser(@Req() req: Request) {
-    const userId = req.auth.userId
+    const userId = await this.instagram.getUserId(req.auth.userId)
 
-    const response = await this.instagram.userInstagramContainer(userId)
+
+    const response = await this.instagram.findUserInstagramContainer(userId)
 
 
     return response
@@ -279,7 +275,8 @@ export class InstagramController {
 
   @Post("saveVidUrl")
   async saveVideoUrl(@Req() req: Request, @Body() body: SaveVideoUrlDto) {
-    const userId = req.auth.userId
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
     return this.instagram.saveVideoUrl({
       videoUrl: body.videoUrl,
       userId: userId,
@@ -287,7 +284,8 @@ export class InstagramController {
   }
   @Get("getVidUrl")
   async getVideoUrl(@Req() req: Request) {
-    const userId = req.auth.userId
+    const userId = await this.instagram.getUserId(req.auth.userId)
+
 
     return this.instagram.getLinkVideoUrl(userId)
   }

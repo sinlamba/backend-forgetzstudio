@@ -7,21 +7,9 @@ export class PrismaHelper {
 
   constructor(private Prisma: DatabaseService) { }
 
-  async saveTokens({ userId, accessToken, refreshToken, providersParams }: SaveTokensParams) {
-
-    await this.Prisma.integration.create({
-      data: {
-        userId: userId,
-        provider: providersParams || "",
-        accessToken: accessToken,
-        refreshToken: refreshToken || ""
-      }
-    })
-
-  }
 
   async FindUnique(userId: string, provider: string) {
-    return await this.Prisma.integration.findUnique({
+    return await this.Prisma.PlatfromIntegration.findUnique({
       where: {
         userId_provider: {
           userId: userId,

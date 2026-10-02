@@ -26,6 +26,10 @@ import { GithubModule } from './github/github.module';
 import { PrismaHelper } from './common/utils/prismaPattern';
 import { InstagramModule } from './instagram/instagram.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThreadsModule } from './threads/threads.module';
+import { TiktokModule } from './tiktok/tiktok.module';
+import { MediapostModule } from './mediapost/mediapost.module';
+import { FacebookModule } from './facebook/facebook.module';
 
 @Module({
   imports: [
@@ -50,7 +54,11 @@ import { ScheduleModule } from '@nestjs/schedule';
     DatabaseModule,
     UsersModule,
     GithubModule,
-    InstagramModule
+    InstagramModule,
+    ThreadsModule,
+    TiktokModule,
+    MediapostModule,
+    FacebookModule
   ],
   controllers: [AppController],
   providers: [
@@ -62,7 +70,6 @@ import { ScheduleModule } from '@nestjs/schedule';
       provide: APP_GUARD,
       useClass: ClerkAuthGuard,
     },
-    GithubService,
     UsersService,
   ],
 })

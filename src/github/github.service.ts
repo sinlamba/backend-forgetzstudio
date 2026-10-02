@@ -1,87 +1,74 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Apikey } from '../common/configEnv/configEnv.service';
-import { URLSearchParams } from 'url';
-import { DatabaseService } from '../database/database.service';
-import { PrismaHelper } from '../common/utils/prismaPattern';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+
+import { githubRepoPort, REPO_PORT } from './port/githubRepoPort';
 import { SaveTokensParams } from '../common/types/tokenDataType';
+import { CLIENT_PORT } from './port/githubClientPort';
+import { githubClient } from './client/githubClient';
+import { provider, saveTokens } from './types/repo/common';
+
 
 
 
 @Injectable()
 export class GithubService {
 
-    constructor(private readonly apiKey: Apikey, private prisma: PrismaHelper) { }
+    constructor(
+
+        //HEXAGONAL PATTERN
+        @Inject(REPO_PORT)
+        private readonly githubRepository: githubRepoPort,
+
+
+        @Inject(CLIENT_PORT)
+        private readonly githubClient: githubClient
+    ) { }
+
+    /**
+* 
+* @instance MENGGUNAKAN CLIENT PORT 
+
+* @returns MENGEMBALIKAN GITHUB CLIENT
+*/
 
     getSignUrl() {
-        const clientId = this.apiKey.getApikey("GITHUB_CLIENT_ID")
-
-        const params = new URLSearchParams({
-            client_id: clientId,
-            scope: "user:read user:email repo"
-        })
-
-
-        return `https://github.com/login/oauth/authorize?${params.toString()}`;
+        return this.githubClient.getUrlOauth()
     }
 
     async exchangeCodeForToken(code: string) {
-
-
-        const response = await fetch("https://github.com/login/oauth/access_token", {
-            method: "POST",
-            headers: {
-                accept: "application/json",
-                "content-type": "application/json"
-            },
-            body: JSON.stringify({
-                client_id: this.apiKey.getApikey("GITHUB_CLIENT_ID"),
-                client_secret: this.apiKey.getApikey("GITHUB_CLIENT_SECRET"),
-                code
-
-
-            })
-        })
-
-
-
-        return response.json()
-
+        return this.githubClient.exchangeCodeForToken(code)
     }
 
     async getGithubUser(token: string) {
-        const response = await fetch("https://api.github.com/user",
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    accept: "application/vnd.github+json",
-
-
-                },
-            }
-        )
-
-
-        return response.json()
+        return this.githubClient.getGithubUser(token)
     }
 
 
-    async saveTokens({ userId, accessToken, refreshToken }: SaveTokensParams) {
-        return await this.prisma.saveTokens({
-            userId,
-            accessToken,
-            refreshToken,
-            providersParams: "Github",
-        })
+
+
+
+
+
+    /**
+    * 
+    * @instance MENGGUNAKAN REPO PORT 
+    
+    * @returns MENGEMBALIKAN GITHUB REPOSIROY
+    */
+
+    async saveTokens(props: saveTokens) {
+        return this.githubRepository.saveToken(props)
     }
-
-
-    async getTokenFromDb(userId: string) {
-        return await this.prisma.FindUnique(
+    async getTokenFromDb(userId: string, provider: provider) {
+        return await this.githubRepository.findUnique(
             userId,
-            "Github"
+            provider
+            
         )
     }
 
+    async getUser(userId: string) {
+        return this.githubRepository.getIdUser(userId)
+    }
 
 
 

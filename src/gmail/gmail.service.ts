@@ -1,4 +1,5 @@
 import {
+  Inject,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
@@ -7,55 +8,43 @@ import { gmail_v1, google } from 'googleapis';
 import { Credentials } from 'google-auth-library';
 import { PDFParse } from 'pdf-parse';
 
-import { Apikey } from '../common/configEnv/configEnv.service';
-import { DatabaseService } from '../database/database.service';
 import { MessagesDTO } from '../common/dto/MessagesDTO';
 import { PytonResult } from '../common/types/pyResultType';
-import { FindUnique } from '../common/types/findUniqe';
-import { PrismaHelper } from '../common/utils/prismaPattern';
+
+import { gmailRepoPort, REPO_PORT } from './port/gmailRepoPort';
+import { CLIENT_PORT, gmailClientPort } from './port/gmailClientPort';
+import { provider } from '../common/types';
 
 @Injectable()
 export class GmailService {
   constructor(
-    private readonly apikey: Apikey,
-    private readonly prisma: DatabaseService,
-    private readonly prismaHelper: PrismaHelper,
-  ) {}
 
 
-  private createClient() {
-    return new google.auth.OAuth2(
-      this.apikey.getApikey('GMAIL_CLIENT_ID'),
-      this.apikey.getApikey('GMAIL_CLIENT_SECRET'),
-      this.apikey.getApikey('GMAIL_REDIRECT_URI'),
-    );
-  }
+
+    // HEXAGONAL PATTERN
+    @Inject(REPO_PORT)
+    private readonly gmailRepository: gmailRepoPort,
+     
+    @Inject(CLIENT_PORT)
+    private readonly gmailClient: gmailClientPort
+
+
+  ) { }
+
+
+
+
 
 
   async getUrl(userId: string) {
-    if (!userId) {
-      throw new InternalServerErrorException(
-        'User ID tidak ditemukan',
-      );
-    }
-
-    const client = this.createClient();
-
-    return client.generateAuthUrl({
-      access_type: 'offline',
-      prompt: 'consent',
-      state: userId,
-
-      scope: [
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.send',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'https://www.googleapis.com/auth/userinfo.profile',
-      ],
-    });
+   return this.gmailClient.getOauthUrl(userId)
   }
-
-
+    
+  async getUser(userId :string) {
+    return this.gmailRepository.getUserId(userId)
+  }
+   
+//  ini batas dari hxg pattern 
   async handleCallback(
     code: string,
     userId: string,
@@ -80,11 +69,12 @@ export class GmailService {
       );
     }
 
-    await this.prismaHelper.saveTokens({
+    await this.gmailRepository.saveTokens({
       userId,
-      providersParams: 'Gmail',
+      provider: "Gmail",
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token,
+      platfromUserId: tokenData.id_token!
     });
 
     return {
@@ -92,45 +82,29 @@ export class GmailService {
     };
   }
 
-  async checkUserConnection(userId: string) {
-    const user = await this.prisma.integration.findUnique({
-      where: {
-        userId_provider: {
-          userId,
-          provider: 'Gmail',
-        },
-      },
-    });
-    return user?.accessToken || null;
+  async checkUserConnection(userId: string, provider:provider):Promise<string> {
+    const user = await this.gmailRepository.findUnique(userId, provider);
+    return user?.accessToken;
   }
 
-async getAccessTokenFromDb({
-  userId,
-  provider,
-}: FindUnique) {
-  const result = await this.prismaHelper.FindUnique(
-    userId,
-    provider,
-  );
+  async getAccessTokenFromDb(userId : string) {
+    const result = await this.gmailRepository.findUnique(userId, "Gmail")
 
 
 
-  return {
-    accessToken: result?.accessToken || '',
-    refreshToken: result?.refreshToken || '',
-  };
-}
+    return {
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken
+    };
+  }
 
-  async getRefreshToken({
-    userId,
-    provider,
-  }: FindUnique) {
-    const result = await this.prismaHelper.FindUnique(
+  async getRefreshToken(userId: string) {
+    const result = await this.gmailRepository.findUnique(
       userId,
-      provider,
+      "Gmail"
     );
 
-    return result?.refreshToken || '';
+    return result || '';
   }
 
   private async getGmailClient(userId: string) {
@@ -140,13 +114,13 @@ async getAccessTokenFromDb({
       );
     }
 
-      const token = await this.getAccessTokenFromDb({
-        userId: userId,
-        provider:"Gmail"
-      })
+    const token = await this.getAccessTokenFromDb(
+    userId
+ 
+    )
 
 
-     
+
     if (!token?.accessToken) {
       throw new InternalServerErrorException(
         'Integrasi Gmail tidak ditemukan',
@@ -159,7 +133,7 @@ async getAccessTokenFromDb({
       );
     }
 
-    const oauth2Client = this.createClient();
+    const oauth2Client = this.gmailClient.createClient();
 
     oauth2Client.setCredentials({
       access_token: token.accessToken || undefined,
@@ -248,7 +222,7 @@ async getAccessTokenFromDb({
       );
     }
 
-    const oauth2Client = this.createClient();
+    const oauth2Client = this.gmailClient.createClient();
 
     const { tokens } =
       await oauth2Client.getToken(code);
@@ -411,7 +385,7 @@ async getAccessTokenFromDb({
       );
     }
 
-    if(!userId){
+    if (!userId) {
       throw new Error("TIDAK ADA USERID NYA")
     }
 
@@ -487,7 +461,7 @@ async getAccessTokenFromDb({
     const chunks =
       this.splitText(text);
 
- 
+
 
     // Kirim ke Python
     const pythonResponse =
@@ -585,7 +559,7 @@ async getAccessTokenFromDb({
     const result =
       pyRes.pythonResult;
 
-   
+
 
     // Jika tidak lolos
     if (result.score < 0.5) {
@@ -650,5 +624,7 @@ async getAccessTokenFromDb({
 
     return null;
   }
-  
+
 }
+
+

@@ -26,7 +26,6 @@ import { pickDefined } from '../utils/pickDefined';
 import type { AxiosInstance } from 'axios';
 import { ValidationError } from '../error/instagramApiError';
 
-
 export class OAuthProvider {
   private readonly loginType: LoginType;
   private readonly clientId: string;
@@ -37,7 +36,6 @@ export class OAuthProvider {
   private readonly transport: HttpTransport;
   private readonly axiosInstance: AxiosInstance | undefined;
 
-
   constructor(config: OAuthConfig) {
     this.loginType = config.loginType ?? 'facebook';
     this.clientId = config.clientId;
@@ -45,7 +43,9 @@ export class OAuthProvider {
     this.redirectUri = config.redirectUri;
     this.scopes =
       config.scopes ??
-      (this.loginType === 'instagram' ? DEFAULT_INSTAGRAM_LOGIN_SCOPES : DEFAULT_OAUTH_SCOPES);
+      (this.loginType === 'instagram'
+        ? DEFAULT_INSTAGRAM_LOGIN_SCOPES
+        : DEFAULT_OAUTH_SCOPES);
     this.apiVersion = config.apiVersion ?? 'v21.0';
 
     const resolved = resolveHttpTransport(
@@ -93,10 +93,11 @@ export class OAuthProvider {
     return `${joinUrl(OAUTH_DIALOG_URL, this.apiVersion, 'dialog/oauth')}?${params}`;
   }
 
- 
   async exchangeCodeForToken(code: string): Promise<AccessTokenResponse> {
     if (!code.trim()) {
-      throw new ValidationError('Authorization code must be a non-empty string.');
+      throw new ValidationError(
+        'Authorization code must be a non-empty string.',
+      );
     }
 
     if (this.loginType === 'instagram') {
@@ -111,10 +112,13 @@ export class OAuthProvider {
     });
   }
 
- 
-  async exchangeForLongLivedToken(shortLivedToken: string): Promise<LongLivedTokenResponse> {
+  async exchangeForLongLivedToken(
+    shortLivedToken: string,
+  ): Promise<LongLivedTokenResponse> {
     if (!shortLivedToken.trim()) {
-      throw new ValidationError('Short-lived token must be a non-empty string.');
+      throw new ValidationError(
+        'Short-lived token must be a non-empty string.',
+      );
     }
 
     if (this.loginType === 'instagram') {
@@ -133,17 +137,21 @@ export class OAuthProvider {
     });
   }
 
- 
-  async refreshLongLivedToken(longLivedToken: string): Promise<LongLivedTokenResponse> {
+  async refreshLongLivedToken(
+    longLivedToken: string,
+  ): Promise<LongLivedTokenResponse> {
     if (!longLivedToken.trim()) {
       throw new ValidationError('Long-lived token must be a non-empty string.');
     }
 
     if (this.loginType === 'instagram') {
-      return this.getInstagramGraph<LongLivedTokenResponse>('refresh_access_token', {
-        grant_type: 'ig_refresh_token',
-        access_token: longLivedToken,
-      });
+      return this.getInstagramGraph<LongLivedTokenResponse>(
+        'refresh_access_token',
+        {
+          grant_type: 'ig_refresh_token',
+          access_token: longLivedToken,
+        },
+      );
     }
 
     return this.getFacebookOAuth<LongLivedTokenResponse>('oauth/access_token', {
@@ -154,16 +162,20 @@ export class OAuthProvider {
     });
   }
 
-  
-  async debugToken(inputToken: string, accessToken: string): Promise<TokenDebugInfo> {
-    const response = await this.getFacebookOAuth<{ data: TokenDebugInfo }>('debug_token', {
-      input_token: inputToken,
-      access_token: accessToken,
-    });
+  async debugToken(
+    inputToken: string,
+    accessToken: string,
+  ): Promise<TokenDebugInfo> {
+    const response = await this.getFacebookOAuth<{ data: TokenDebugInfo }>(
+      'debug_token',
+      {
+        input_token: inputToken,
+        access_token: accessToken,
+      },
+    );
 
     return response.data;
   }
-
 
   async listConnectedAccounts(
     userAccessToken: string,
@@ -204,38 +216,43 @@ export class OAuthProvider {
     const payload = response.data;
 
     if (response.status < 200 || response.status >= 300 || payload.error) {
-      throw new ValidationError(payload.error?.message ?? `Account discovery failed with status ${response.status}`);
+      throw new ValidationError(
+        payload.error?.message ??
+          `Account discovery failed with status ${response.status}`,
+      );
     }
 
     return payload;
   }
 
-  
   getAxiosInstance(): AxiosInstance | undefined {
     return this.axiosInstance;
   }
 
-  
   getHttpTransport(): HttpTransport {
     return this.transport;
   }
 
-  private async exchangeInstagramCodeForToken(code: string): Promise<InstagramLoginAccessTokenResponse> {
-    const payload = await this.postForm<InstagramLoginAccessTokenResponse | { data: InstagramLoginAccessTokenResponse[] }>(
-      joinUrl(INSTAGRAM_OAUTH_API_BASE_URL, 'oauth/access_token'),
-      {
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        grant_type: 'authorization_code',
-        redirect_uri: this.redirectUri,
-        code,
-      },
-    );
+  private async exchangeInstagramCodeForToken(
+    code: string,
+  ): Promise<InstagramLoginAccessTokenResponse> {
+    const payload = await this.postForm<
+      | InstagramLoginAccessTokenResponse
+      | { data: InstagramLoginAccessTokenResponse[] }
+    >(joinUrl(INSTAGRAM_OAUTH_API_BASE_URL, 'oauth/access_token'), {
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+      grant_type: 'authorization_code',
+      redirect_uri: this.redirectUri,
+      code,
+    });
 
     if ('data' in payload && Array.isArray(payload.data)) {
       const [token] = payload.data;
       if (!token) {
-        throw new ValidationError('Instagram Login code exchange returned an empty token response.');
+        throw new ValidationError(
+          'Instagram Login code exchange returned an empty token response.',
+        );
       }
       return token;
     }
@@ -244,13 +261,20 @@ export class OAuthProvider {
       return payload;
     }
 
-    throw new ValidationError('Instagram Login code exchange returned an invalid token response.');
+    throw new ValidationError(
+      'Instagram Login code exchange returned an invalid token response.',
+    );
   }
 
-  private async getFacebookOAuth<T>(path: string, params: Record<string, string>): Promise<T> {
+  private async getFacebookOAuth<T>(
+    path: string,
+    params: Record<string, string>,
+  ): Promise<T> {
     const query = buildQueryString(params);
     const url = `${joinUrl(GRAPH_API_BASE_URL, this.apiVersion, path)}?${query}`;
-    const response = await this.transport.request<T & { error?: { message: string } }>({
+    const response = await this.transport.request<
+      T & { error?: { message: string } }
+    >({
       url,
       method: 'GET',
       headers: {
@@ -260,16 +284,24 @@ export class OAuthProvider {
     const payload = response.data;
 
     if (response.status < 200 || response.status >= 300 || payload.error) {
-      throw new ValidationError(payload.error?.message ?? `OAuth request failed with status ${response.status}`);
+      throw new ValidationError(
+        payload.error?.message ??
+          `OAuth request failed with status ${response.status}`,
+      );
     }
 
     return payload;
   }
 
-  private async getInstagramGraph<T>(path: string, params: Record<string, string>): Promise<T> {
+  private async getInstagramGraph<T>(
+    path: string,
+    params: Record<string, string>,
+  ): Promise<T> {
     const query = buildQueryString(params);
     const url = `${joinUrl(INSTAGRAM_GRAPH_API_BASE_URL, path)}?${query}`;
-    const response = await this.transport.request<T & { error?: { message: string } }>({
+    const response = await this.transport.request<
+      T & { error?: { message: string } }
+    >({
       url,
       method: 'GET',
       headers: {
@@ -279,20 +311,31 @@ export class OAuthProvider {
     const payload = response.data;
 
     if (response.status < 200 || response.status >= 300 || payload.error) {
-      throw new ValidationError(payload.error?.message ?? `Instagram OAuth request failed with status ${response.status}`);
+      throw new ValidationError(
+        payload.error?.message ??
+          `Instagram OAuth request failed with status ${response.status}`,
+      );
     }
 
     return payload;
   }
 
-  private async postFacebookOAuth<T>(path: string, params: Record<string, string>): Promise<T> {
+  private async postFacebookOAuth<T>(
+    path: string,
+    params: Record<string, string>,
+  ): Promise<T> {
     const url = joinUrl(GRAPH_API_BASE_URL, this.apiVersion, path);
     return this.postForm<T>(url, params);
   }
 
-  private async postForm<T>(url: string, params: Record<string, string>): Promise<T> {
+  private async postForm<T>(
+    url: string,
+    params: Record<string, string>,
+  ): Promise<T> {
     const body = new URLSearchParams(params);
-    const response = await this.transport.request<T & { error?: { message: string } }>({
+    const response = await this.transport.request<
+      T & { error?: { message: string } }
+    >({
       url,
       method: 'POST',
       headers: {
@@ -304,7 +347,10 @@ export class OAuthProvider {
     const payload = response.data;
 
     if (response.status < 200 || response.status >= 300 || payload.error) {
-      throw new ValidationError(payload.error?.message ?? `OAuth request failed with status ${response.status}`);
+      throw new ValidationError(
+        payload.error?.message ??
+          `OAuth request failed with status ${response.status}`,
+      );
     }
 
     return payload;

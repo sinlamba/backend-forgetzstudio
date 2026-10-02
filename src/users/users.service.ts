@@ -7,56 +7,75 @@ import type { WebhookEvent } from '@clerk/backend';
 export class UsersService {
   constructor(
     private readonly prisma: DatabaseService,
-  ) { }
+  ) {}
 
-  async handleClerkWebhook(data: WebhookEvent) {
-    switch (data.type) {
-      case 'user.created': {
-        const clerkUser = data.data;
+async handleClerkWebhook(data: WebhookEvent) {
+ 
 
-        const email =
-          clerkUser.email_addresses[0]?.email_address;
 
-        if (!email) {
-          throw new Error('Email user tidak ditemukan');
-        }
+  switch (data.type) {
+    case 'user.created': {
+      const clerkUser = data.data;
 
-        const name = [
-          clerkUser.first_name,
-          clerkUser.last_name,
-        ]
-          .filter(Boolean)
-          .join(' ');
+      const email =
+        clerkUser.email_addresses[0]?.email_address;
 
-        await this.prisma.user.create({
+
+
+      if (!email) {
+        throw new Error('Email user tidak ditemukan');
+      }
+
+      const name = [
+        clerkUser.first_name,
+        clerkUser.last_name,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      console.log("SEBELUM CREATE USER");
+
+      try {
+        const result = await this.prisma.user.create({
           data: {
             clerkId: clerkUser.id,
             email,
             name: name || null,
           },
         });
-        break;
-      }
-      case 'user.deleted': {
-        const user = data.data
 
-        await this.prisma.user.deleteMany({
-          where: {
-            clerkId: user.id
-          }
-        })
-        break
+        console.log("CREATE USER BERHASIL");
+        console.log(result);
+      } catch (error) {
+        console.error("CREATE USER GAGAL");
+        console.error(error);
+
+        throw error;
       }
-      default: {
-        console.log(
-          'Unhandled Clerk event:',
-          data.type,
-        );
-      }
+
+      break;
     }
 
-    return {
-      received: true,
-    };
+    case 'user.deleted': {
+      const user = data.data;
+
+      const result = await this.prisma.user.deleteMany({
+        where: {
+          clerkId: user.id,
+        },
+      });
+
+
+
+      break;
+    }
+
+    default:
+      console.log("Unhandled Clerk event:", data.type);
   }
+
+  return {
+    received: true,
+  };
+}
 }

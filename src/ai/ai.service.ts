@@ -10,7 +10,7 @@ export class AiService {
   constructor(private config: Apikey) {
 
     this.model = new ChatOpenAI({
-      model: 'oc/ling-3.0-flash-fin-free',
+      model: 'oc/space-bunny-free',
 
       apiKey: config.getApikey('ROUTER_KEY'),
 
@@ -56,7 +56,7 @@ katakan bahwa kamu tidak tahu.
   }
 
   getModel() {
-
+  
     return this.model;
   }
   getAnswerModel() {

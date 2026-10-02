@@ -12,5 +12,5 @@ export class InstagramPostDTO {
     audioName! : string
 
     @IsDateString() 
-    schedule!: string
+   scheduledAt!: string
 }

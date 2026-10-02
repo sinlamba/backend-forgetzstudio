@@ -7,53 +7,56 @@ datasource db {
 }
 
 model User {
-  id           String               @id @default(cuid())
-  clerkId      String               @unique
-  email        String               @unique
-  name         String?
-  createAt     DateTime             @default(now())
-  updateAt     DateTime             @updatedAt
-  integration  Integration[]
-  instagramRef InstagramContainer[]
-  Gallery      Gallery[]
+  id                  String                @id @default(cuid())
+  clerkId             String                @unique
+  email               String                @unique
+  name                String?
+  crossPlatfrom       String[]
+  createAt            DateTime              @default(now())
+  updateAt            DateTime              @updatedAt
+  platfromIntegration PlatfromIntegration[]
+  containerRef        ContainerId[]
+  gallery             Gallery[]
 }
 
-model Integration {
-  id                String   @id @default(cuid())
-  userId            String
-  provider          String
-  accessToken       String
-  refreshToken      String?
-  providerAccountId String?
-  createAt          DateTime @default(now())
-  updateAt          DateTime @updatedAt
-  user              User     @relation(fields: [userId], references: [clerkId])
+model PlatfromIntegration {
+  id             String    @id @default(cuid())
+  userId         String
+  platform       String?
+  accessToken    String
+  refreshToken   String?
+  platformUserId String?
+  expiresAt      DateTime?
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
 
-  @@unique([userId, provider])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, platform])
 }
 
-model InstagramContainer {
-  id              String    @id @default(cuid())
-  userId          String
-  instagramUserId String
-  containerId     String    @unique
-  publish         Boolean?
-  scheduledAt     DateTime?
-  status          Boolean?
-  createAt        DateTime  @default(now())
-  updateAt        DateTime  @updatedAt
-  user            User      @relation(fields: [userId], references: [clerkId])
+model ContainerId {
+  id             String    @id @default(cuid())
+  userId         String
+  platformUserId String
+  platform       String
+  containerId    String    @unique
+  publish        Boolean?
+  scheduledAt    DateTime?
+  createAt       DateTime  @default(now())
+  updateAt       DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id])
 }
 
 model Gallery {
   id        String   @id @default(cuid())
   userId    String
-  videoUrl  String 
+  videoUrl  String
   instagram Boolean?
   facebook  Boolean?
   tiktok    Boolean?
   threads   Boolean?
   createAt  DateTime @default(now())
   updateAt  DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [clerkId])
+  user      User     @relation(fields: [userId], references: [id])
 }

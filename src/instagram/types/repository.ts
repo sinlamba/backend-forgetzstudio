@@ -1,12 +1,12 @@
 
 
 
-export type provider = "Instagram" | "Github" | "Gmail" | "Tiktok" | "Whatsapp" | "Telegram"
+export type provider = "Instagram" | "Github" | "Gmail" | "Tiktok" | "Whatsapp" | "Telegram " | "Threads"
 
 export interface getTokenResultType {
     userId: string;
     provider: string;
-    providerAccountId: string | null;
+    platfromAccountId: string | null;
     id: string;
     accessToken: string;
     refreshToken: string | null;
@@ -17,17 +17,20 @@ export interface getTokenResultType {
 
 export interface saveInstagramAccessToken {
     userId: string
+
     access_token: string
+    refreshToken: string
+    expiresAt: Date
     provider: provider
-    providerAccountId: string
+    platfromAccountId: string
 }
 
 
 export interface instagramContainerResultType {
     userId: string
     containerId: string
-    instagramUserId: string
-    status: boolean | null
+    platfromUserId: string
+
     publish: boolean | null
     scheduledAt: Date | null
     createAt: Date | null;

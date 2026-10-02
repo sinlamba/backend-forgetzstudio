@@ -121,10 +121,7 @@ ATURAN PENTING:
     userId: string,
   ) {
 
-    const { accessToken, refreshToken } = await this.gmailService.getAccessTokenFromDb({
-      userId: userId,
-      provider: "Gmail"
-    })
+    const { accessToken, refreshToken } = await this.gmailService.getAccessTokenFromDb(userId)
     if (!accessToken || !refreshToken) {
       throw new Error("Token not found")
     }

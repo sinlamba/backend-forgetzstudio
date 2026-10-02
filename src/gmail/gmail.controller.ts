@@ -5,6 +5,7 @@ import {
   Query,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { GmailService } from './gmail.service';
@@ -32,7 +33,7 @@ export class GmailController {
   ) {
     try {
 
-      const userId = req.auth.userId
+      const userId = await this.gmailService.getUser(req.auth.userId)
       if (error) {
         return res.redirect(
           `http://localhost:3000/dashboard?gmail=denied`,
@@ -66,10 +67,10 @@ export class GmailController {
   async getMessages(@Req() req: Request) {
     const userId = req.auth.userId;
 
-    const {accessToken , refreshToken }= await this.gmailService.getAccessTokenFromDb({
-      userId : userId,
-      provider : "gmail"
-    })
+    const {accessToken , refreshToken }= await this.gmailService.getAccessTokenFromDb(
+      userId
+
+    )
     if (!accessToken || !refreshToken) {
       throw new Error("ACCESS_TOKEN_NOT_FOUND")
     }
@@ -87,12 +88,9 @@ export class GmailController {
     @Param('id') messageId: string,
     @Req() req: Request,
   ) {
-    const userId = req.auth.userId;
+         const userId = await this.gmailService.getUser(req.auth.userId)
 
-    const {accessToken, refreshToken} = await this.gmailService.getAccessTokenFromDb({
-      userId: userId,
-      provider: "Gmail"
-    })
+    const {accessToken, refreshToken} = await this.gmailService.getAccessTokenFromDb(userId)
     if (!accessToken || !refreshToken) {
       throw new Error("ACCESS_TOKEN_NOT_FOUND")
     }
@@ -105,28 +103,34 @@ export class GmailController {
   }
 
 
-  @Get("connect")
-  async connection(@Req() req: Request) {
-    const userId = req.auth.userId
+@Get("connect")
+async connection(@Req() req: Request) {
+  const clerkUserId = req.auth?.userId;
 
-    const token = await this.gmailService.checkUserConnection(userId)
-
-    if (!token) {
-      throw new Error("ACCESS_TOKEN_NOT_FOUND")
-    }
-    return {
-      connected: Boolean(token)
-    }
+  if (!clerkUserId) {
+    throw new UnauthorizedException("UNAUTHORIZED");
   }
 
+  const userId = await this.gmailService.getUser(
+    clerkUserId,
+  );
+
+  const token = await this.gmailService.checkUserConnection(
+    userId,
+    "Gmail"
+  );
+
+
+
+  return {
+    connected: Boolean(token),
+  };
+}
 
   @Get("attachment")
   async getAttachment(@Req() req: Request) {
-    const userId = req.auth.userId;
-  const {accessToken , refreshToken} = await this.gmailService.getAccessTokenFromDb({
-      userId: userId,
-      provider: "Gmail"
-    })
+      const userId = await this.gmailService.getUser(req.auth.userId)
+  const {accessToken , refreshToken} = await this.gmailService.getAccessTokenFromDb(userId)
     if (!accessToken || !refreshToken) {
       throw new Error("Not found token");
     }

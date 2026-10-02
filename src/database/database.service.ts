@@ -60,12 +60,12 @@ export class DatabaseService
     return this.prisma.user;
   }
 
-  get integration() {
-    return this.prisma.integration;
+  get PlatfromIntegration() {
+    return this.prisma.platfromIntegration;
   }
 
-  get IntagramContainer() {
-    return this.prisma.instagramContainer
+  get ContainerId() {
+    return this.prisma.containerId
   }
   get Gallery() {
     return this.prisma.gallery
