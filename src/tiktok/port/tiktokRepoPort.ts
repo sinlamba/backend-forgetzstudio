@@ -10,13 +10,13 @@ export interface TiktokRepoPort {
 findManyAccessTokenTiktok(userId: string[])
  updatePlatformToken({
     userId,
-    provider,
+    platform,
     accessToken,
     refreshToken,
     expiresAt,
   }: {
     userId: string;
-    provider: provider;
+    platform: provider;
     accessToken: string;
     refreshToken?: string;
     expiresAt?: Date;

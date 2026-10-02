@@ -47,10 +47,10 @@ export type getThreadsManyContainer = {
      userId: string;
     containerId: string;
     id: string;
-    platfromUserId: string;
+    platformUserId: string;
     createAt: Date;
     updateAt: Date;
-    platfrom: string;
+    platform: string;
     publish: boolean | null;
     scheduledAt: Date | null;
 }

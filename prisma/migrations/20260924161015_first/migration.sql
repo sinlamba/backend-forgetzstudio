@@ -63,7 +63,7 @@ CREATE UNIQUE INDEX "User_clerkId_key" ON "User"("clerkId");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PlatfromIntegration_userId_provider_key" ON "PlatfromIntegration"("userId", "provider");
+CREATE UNIQUE INDEX "PlatfromIntegration_  userId_platform_key" ON "PlatfromIntegration"("userId", "provider");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ContainerId_containerId_key" ON "ContainerId"("containerId");

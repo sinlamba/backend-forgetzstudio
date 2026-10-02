@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { DatabaseService } from "../../database/database.service";
-import { getTokenResultType, getVideoLinkType, instagramContainerResultType, provider, saveContainerId, saveInstagramAccessToken, saveLinkVideo, saveLinkVideType, saveTokenInstagramResult } from "../types";
+import { getTokenResultType, getVideoLinkType, instagramContainerResultType,provider,saveContainerId, saveInstagramAccessToken, saveLinkVideo, saveLinkVideType, saveTokenInstagramResult } from "../types";
 import { InstagramRepoPort } from "../port/instagramRepoPort";
 
 
@@ -45,16 +45,16 @@ export class InstagramRepository implements InstagramRepoPort {
 
 
 
-    async saveTokensInstagram({ userId, access_token, provider, platfromAccountId, refreshToken, expiresAt }: saveInstagramAccessToken): Promise<saveTokenInstagramResult> {
+    async saveTokensInstagram({ userId, access_token, platform, platformUserId, refreshToken, expiresAt }: saveInstagramAccessToken): Promise<saveTokenInstagramResult> {
 
-        return this.Prisma.PlatfromIntegration.create({
+        return this.Prisma.PlatformIntegration.create({
             data: {
                 userId: userId,
                 accessToken: access_token,
-                provider: provider,
+                platform: platform,
                 expiresAt: expiresAt,
                 refreshToken: refreshToken,
-                platfromAccountId: platfromAccountId,
+                platformUserId: platformUserId,
 
             }
         })
@@ -68,15 +68,15 @@ export class InstagramRepository implements InstagramRepoPort {
 
     }
 
-    async saveContainerId({ userId, containerId, platfromUserId, scheduledAt, platfrom }: saveContainerId) {
+    async saveContainerId({ userId, containerId, platformUserId, scheduledAt, platform }: saveContainerId) {
 
         return await this.Prisma.ContainerId.create(
             {
                 data: {
                     userId,
-                    platfrom: platfrom,
+                    platform: platform,
                     containerId,
-                    platfromUserId,
+                    platformUserId,
                     publish: false,
                     scheduledAt: scheduledAt
 
@@ -93,7 +93,7 @@ export class InstagramRepository implements InstagramRepoPort {
 
         return this.Prisma.ContainerId.findMany({
             where: {
-                platfrom:"Instagram",
+                platform:"Instagram",
                 publish: false,
                 scheduledAt: {
                     lte: now,
@@ -101,12 +101,12 @@ export class InstagramRepository implements InstagramRepoPort {
             },
         });
     }
-    async findAccessTokenInstagram(userId: string, provider: provider): Promise<getTokenResultType> {
-        const res = await this.Prisma.PlatfromIntegration.findUnique({
+    async findAccessTokenInstagram(userId: string, platform: provider): Promise<getTokenResultType> {
+        const res = await this.Prisma.PlatformIntegration.findUnique({
             where: {
-                userId_provider: {
+                  userId_platform: {
                     userId: userId,
-                    provider: provider
+                    platform: platform
 
                 }
             }
@@ -118,8 +118,8 @@ export class InstagramRepository implements InstagramRepoPort {
 
         return {
             userId: res.userId,
-            provider: res.provider || "",
-            platfromAccountId: res.platfromAccountId,
+            platform: res.platform || "",
+            platformUserId: res.platformUserId!,
             id: res.id,
             accessToken: res.accessToken,
             refreshToken: res.refreshToken,
@@ -149,9 +149,9 @@ export class InstagramRepository implements InstagramRepoPort {
     }
 
     async findManyAccessTokenInstagram(userId: string[]) {
-        const data = await this.Prisma.PlatfromIntegration.findMany({
+        const data = await this.Prisma.PlatformIntegration.findMany({
             where: {
-                provider: "Instagram",
+                platform: "Instagram",
                 userId: {
                     in: userId
                 }

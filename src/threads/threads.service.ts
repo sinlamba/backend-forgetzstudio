@@ -97,7 +97,7 @@ export class ThreadsService {
 
         // ini function numpang yah untuk cari aja providerUserId
         const platfromUserId = await this.ThreadsRepo.findAccessTokenThreads(userId, "Threads")
-        if (!platfromUserId.platfromAccountId) {
+        if (!platfromUserId.platformUserId) {
             throw new BadRequestException("threads userId not found")
         }
         // ini function numpang yah untuk cari aja providerUserId
@@ -108,7 +108,7 @@ export class ThreadsService {
             userId: userId,
             platfrom: "Threads",
             containerId: results.id,
-            platfromAccountId: platfromUserId.platfromAccountId,
+            platfromAccountId: platfromUserId.platformUserId!,
             scheduledAt: scheduleAt,
             publish: false
         })
@@ -212,7 +212,7 @@ export class ThreadsService {
                     const postData =
                         await this.publishExec({
                             threadsUserId:
-                                post.platfromUserId,
+                                post.platformUserId,
                             containerId:
                                 post.containerId,
                             accessToken,

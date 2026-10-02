@@ -34,7 +34,7 @@ export class TiktokService {
 
     const saveToken = await this.TiktokRepo.saveAccessToken({
       id: userId,
-      provider: 'Tiktok',
+      platform: 'Tiktok',
       platformId: result.open_id,
       accessToken: result.access_token,
       refreshToken: result.refresh_token,

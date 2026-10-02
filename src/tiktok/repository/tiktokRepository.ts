@@ -11,13 +11,13 @@ export class TiktokRepository implements TiktokRepoPort {
   async saveAccessToken(
     props: SaveAccessTokenTiktok,
   ): Promise<Record<string, string | boolean>> {
-    const response = await this.prisma.PlatfromIntegration.create({
+    const response = await this.prisma.PlatformIntegration.create({
       data: {
         userId: props.id,
-        provider: props.provider,
+        platform: props.platform,
         accessToken: props.accessToken,
         refreshToken: props.refreshToken,
-        platfromAccountId: props.platformId,
+        platformUserId: props.platformId,
         expiresAt: props.expiresAt,
       },
     });
@@ -49,7 +49,7 @@ export class TiktokRepository implements TiktokRepoPort {
   async getScheduledTikTokPosts() {
     return this.prisma.ContainerId.findMany({
       where: {
-        platfrom: 'Tiktok',
+        platform: 'Tiktok',
         publish: false,
         scheduledAt: {
           lte: new Date(),
@@ -62,11 +62,11 @@ export class TiktokRepository implements TiktokRepoPort {
   }
 
   async chechkConnection({ userId, provider }: { userId: string, provider: string }) {
-    return this.prisma.PlatfromIntegration.findUnique({
+    return this.prisma.PlatformIntegration.findUnique({
       where: {
-        userId_provider: {
+          userId_platform: {
           userId: userId,
-          provider: provider
+          platform: provider
         }
       }
     })
@@ -120,7 +120,7 @@ export class TiktokRepository implements TiktokRepoPort {
 
     const data = await this.prisma.ContainerId.findMany({
       where: {
-        platfrom: "Tiktok",
+        platform: "Tiktok",
         publish: false,
         scheduledAt: {
           lte: now,
@@ -133,9 +133,9 @@ export class TiktokRepository implements TiktokRepoPort {
 
 
   async findManyAccessTokenTiktok(userId: string[]) {
-    const data = await this.prisma.PlatfromIntegration.findMany({
+    const data = await this.prisma.PlatformIntegration.findMany({
       where: {
-        provider: "Tiktok",
+        platform: "Tiktok",
         userId: {
           in: userId
         }
@@ -149,22 +149,22 @@ export class TiktokRepository implements TiktokRepoPort {
 
   async updatePlatformToken({
     userId,
-    provider,
+    platform,
     accessToken,
     refreshToken,
     expiresAt,
   }: {
     userId: string;
-    provider: provider;
+    platform: provider;
     accessToken: string;
     refreshToken?: string;
     expiresAt?: Date;
   }) {
-    return this.prisma.PlatfromIntegration.update({
+    return this.prisma.PlatformIntegration.update({
       where: {
-        userId_provider: {
+          userId_platform: {
           userId,
-          provider,
+          platform,
         },
       },
       data: {

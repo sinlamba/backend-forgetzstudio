@@ -166,7 +166,7 @@ export class InstagramService {
 
 
   // DONE MIGRATE TO HXG PTRN
-  async saveTokens({ userId, access_token, provider, platfromAccountId, expiresAt, refreshToken }: saveInstagramAccessToken) {
+  async saveTokens({ userId, access_token, platform, platformUserId, expiresAt, refreshToken }: saveInstagramAccessToken) {
 
 
 
@@ -174,10 +174,10 @@ export class InstagramService {
       {
         userId,
         access_token,
-        provider,
+        platform,
         refreshToken,
         expiresAt,
-        platfromAccountId
+        platformUserId
       }
     )
 
@@ -244,10 +244,10 @@ export class InstagramService {
 
 
     const result:saveContainerId = {
-      platfrom: "Instagram",
+      platform: "Instagram",
       userId: props.userId,
       containerId: responseContainer.id,
-      platfromUserId: props.platfromUserId,
+      platformUserId: props.platfromUserId,
       publish: false,
       scheduledAt: props.scheduledAt!
     }

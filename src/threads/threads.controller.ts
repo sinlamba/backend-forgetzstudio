@@ -64,7 +64,7 @@ export class ThreadsController {
 
         return await this.ThreadsSevice.createContainerId({
             accessToken: accessToken.accessToken,
-            userId: accessToken.platfromAccountId!,
+            userId: accessToken.platformUserId!,
             mediaType: "VIDEO",
             mediaUrl: body.videoUrl,
             text: body.caption,

@@ -14,12 +14,12 @@ model User {
   crossPlatfrom       String[]
   createAt            DateTime              @default(now())
   updateAt            DateTime              @updatedAt
-  platfromIntegration PlatfromIntegration[]
+  platformIntegration PlatformIntegration[]
   containerRef        ContainerId[]
   gallery             Gallery[]
 }
 
-model PlatfromIntegration {
+model PlatformIntegration {
   id             String    @id @default(cuid())
   userId         String
   platform       String?

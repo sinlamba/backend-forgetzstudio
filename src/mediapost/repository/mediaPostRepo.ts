@@ -39,7 +39,7 @@ export class MediaPostRepo {
     const result =
       await this.Prisma.PlatfromIntegration.findUnique({
         where: {
-          userId_provider: {
+            userId_platform: {
             userId,
             provider,
           },
@@ -61,7 +61,7 @@ export class MediaPostRepo {
   ) {
     return this.Prisma.PlatfromIntegration.findUnique({
       where: {
-        userId_provider: {
+          userId_platform: {
           userId,
           provider,
         },
@@ -112,7 +112,7 @@ export class MediaPostRepo {
 }) {
   return this.Prisma.PlatfromIntegration.update({
     where: {
-      userId_provider: {
+        userId_platform: {
         userId,
         provider,
       },

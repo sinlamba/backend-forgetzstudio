@@ -9,11 +9,11 @@ export class PrismaHelper {
 
 
   async FindUnique(userId: string, provider: string) {
-    return await this.Prisma.PlatfromIntegration.findUnique({
+    return await this.Prisma.PlatformIntegration.findUnique({
       where: {
-        userId_provider: {
+          userId_platform: {
           userId: userId,
-          provider: provider
+          platform: provider
 
         }
       }

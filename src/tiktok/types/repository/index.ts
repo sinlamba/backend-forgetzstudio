@@ -2,7 +2,7 @@ export type Provider = 'Tiktok';
 
 export interface SaveAccessTokenTiktok {
   id: string;
-  provider: Provider;
+  platform: Provider;
   platformId: string;
   accessToken: string;
   refreshToken: string;
@@ -13,10 +13,10 @@ export type getTiktokManyContainer = {
      userId: string;
     containerId: string;
     id: string;
-    platfromUserId: string;
+    platformUserId: string;
     createAt: Date;
     updateAt: Date;
-    platfrom: string;
+    platform: string;
     publish: boolean | null;
     scheduledAt: Date | null;
 }

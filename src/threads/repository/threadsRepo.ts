@@ -14,14 +14,14 @@ export class threadsRepository implements threadsRepoPort {
 
     async saveTokens(props: saveTokens): Promise<resultSaveTokens> {
 
-        const res = await this.Prisma.PlatfromIntegration.create({
+        const res = await this.Prisma.PlatformIntegration.create({
             data: {
                 userId: props.id,
                 accessToken: props.accessToken,
-                provider: props.provider,
+                platform: props.provider,
                 expiresAt: props.expired,
                 refreshToken: props.refreshToken,
-                platfromAccountId: props.providerAccountId
+                platformUserId: props.providerAccountId
 
             }
         })
@@ -32,10 +32,10 @@ export class threadsRepository implements threadsRepoPort {
         return {
             userId: res.userId,
             accessToken: res.accessToken,
-            provider: res.provider!,
+            provider: res.platform!,
             expired: res.expiresAt!,
             refreshToken: res.refreshToken!,
-            platfromAccountId: res.platfromAccountId!
+            platfromAccountId: res.platformUserId!
         }
 
 
@@ -44,11 +44,11 @@ export class threadsRepository implements threadsRepoPort {
 
 
     async findAccessTokenThreads(userId: string, provider: provider): Promise<getTokenResultType> {
-        const res = await this.Prisma.PlatfromIntegration.findUnique({
+        const res = await this.Prisma.PlatformIntegration.findUnique({
             where: {
-                userId_provider: {
+                  userId_platform: {
                     userId: userId,
-                    provider: provider
+                    platform: provider
 
                 }
             }
@@ -60,8 +60,8 @@ export class threadsRepository implements threadsRepoPort {
 
         return {
             userId: res.userId,
-            provider: res.provider || "",
-            platfromAccountId: res.platfromAccountId,
+          platform: res.platform || "",
+            platformUserId: res.platformUserId,
             id: res.id,
             accessToken: res.accessToken,
             refreshToken: res.refreshToken,
@@ -79,9 +79,9 @@ export class threadsRepository implements threadsRepoPort {
         const res = await this.Prisma.ContainerId.create({
             data: {
                 userId: props.userId,
-                platfrom: props.platfrom,
+                platform: props.platfrom,
                 containerId: props.containerId,
-                platfromUserId: props.platfromAccountId,
+                platformUserId: props.platfromAccountId,
                 publish: false,
                 scheduledAt: props.scheduledAt
 
@@ -136,9 +136,9 @@ export class threadsRepository implements threadsRepoPort {
     }
 
     async getManyAccessTokenThreads(userId: string[]) {
-        const data = await this.Prisma.PlatfromIntegration.findMany({
+        const data = await this.Prisma.PlatformIntegration.findMany({
             where: {
-                provider: "Threads",
+                platform: "Threads",
                 userId: {
                     in: userId
                 }
@@ -154,7 +154,7 @@ export class threadsRepository implements threadsRepoPort {
 
         const data = await this.Prisma.ContainerId.findMany({
             where: {
-                platfrom:"Threads",
+                platform:"Threads",
                 publish: false,
                 scheduledAt: {
                     lte: now,

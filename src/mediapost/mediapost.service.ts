@@ -83,7 +83,7 @@ export class MediapostService {
                   );
 
               if (
-                  !integration?.platfromAccountId
+                  !integration?.platformUserId!
               ) {
                   results.push({
                       platform,
@@ -107,14 +107,14 @@ export class MediapostService {
                       userId,
                       accessToken,
                       platfromUserId:
-                          integration.platfromAccountId,
+                          integration.platformUserId!,
                   });
 
               // Save container hanya di sini.
               await this.mediaRepo.saveContainerId({
                   containerId: response.id,
                   platfromUserId:
-                      integration.platfromAccountId,
+                      integration.platformUserId!,
                   userId,
                   platfrom: 'Instagram',
                   publish: false,
@@ -137,7 +137,7 @@ export class MediapostService {
                       'Threads',
                   );
 
-              if (!integration?.platfromAccountId) {
+              if (!integration?.platformUserId!) {
                   results.push({
                       platform,
                       success: false,
@@ -161,7 +161,7 @@ export class MediapostService {
                           userId,
                           accessToken,
                           platfromUserId:
-                              integration.platfromAccountId,
+                              integration.platformUserId!,
                       },
                   );
 
@@ -173,7 +173,7 @@ export class MediapostService {
               await this.mediaRepo.saveContainerId({
                   containerId: response.id,
                   platfromUserId:
-                      integration.platfromAccountId,
+                      integration.platformUserId!,
                   userId,
                   platfrom: 'Threads',
                   publish: false,
@@ -195,7 +195,7 @@ export class MediapostService {
               'Tiktok',
             );
 
-            if (!integration?.platfromAccountId) {
+            if (!integration?.platformUserId!) {
               results.push({
                 platform,
                 success: false,
@@ -217,7 +217,7 @@ export class MediapostService {
 
             await this.mediaRepo.saveContainerId({
               containerId: response.publish_id,
-              platfromUserId: integration.platfromAccountId,
+              platfromUserId: integration.platformUserId!,
               userId,
               platfrom: 'Tiktok',
               publish: false,

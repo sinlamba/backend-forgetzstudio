@@ -60,8 +60,8 @@ export class DatabaseService
     return this.prisma.user;
   }
 
-  get PlatfromIntegration() {
-    return this.prisma.platfromIntegration;
+  get PlatformIntegration() {
+    return this.prisma.platformIntegration;
   }
 
   get ContainerId() {

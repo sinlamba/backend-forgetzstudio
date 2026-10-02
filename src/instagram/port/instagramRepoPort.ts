@@ -3,7 +3,7 @@ import { getVideoLinkType, saveContainerId, saveInstagramAccessToken, saveLinkVi
 
 export abstract class InstagramRepoPort {
 
-    abstract saveTokensInstagram({ userId, access_token, provider, platfromAccountId, refreshToken, expiresAt }: saveInstagramAccessToken): Promise<saveTokenInstagramResult>
+    abstract saveTokensInstagram({ userId, access_token, platform, platformUserId, refreshToken, expiresAt }: saveInstagramAccessToken): Promise<saveTokenInstagramResult>
 
     abstract saveLinkVideo({
         userId,
@@ -17,7 +17,7 @@ export abstract class InstagramRepoPort {
         clerkId: string
     ): Promise<string[]>
     abstract getInstagramContainerUnpublisheds()
-abstract saveContainerId({ userId, containerId, platfromUserId, scheduledAt, platfrom }: saveContainerId)
+abstract saveContainerId({ userId, containerId, platformUserId, scheduledAt, platform }: saveContainerId)
 }
 
 export const REPO_PORT = Symbol("REPO_PORT")

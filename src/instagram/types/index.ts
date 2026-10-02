@@ -20,8 +20,8 @@ export interface createIgContainerId {
 export interface saveContainerId {
     userId: string
     containerId: string
-    platfrom:provider
-    platfromUserId: string
+    platform:provider
+    platformUserId: string
     publish: boolean | null
     scheduledAt: Date
 }
@@ -44,8 +44,8 @@ export interface publishExecType {
 
 export interface saveTokenInstagramResult {
     userId: string;
-    provider: string | null;
-    platfromAccountId: string | null;
+    platform: string | null;
+    platformUserId: string | null;
     accessToken: string;
     refreshToken: string | null;
     createAt: Date;

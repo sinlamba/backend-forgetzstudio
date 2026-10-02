@@ -28,7 +28,7 @@ export class MappersThreadsGlobal {
         return {
             userId: props.userId,
             platfrom: "Threads",
-            platfromAccountId: props.platfromUserId,
+            platfromAccountId: props.platformUserId,
             publish: false,
             scheduledAt: props.scheduledAt,
             containerId: props.containerId!

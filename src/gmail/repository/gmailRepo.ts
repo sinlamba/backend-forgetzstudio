@@ -42,7 +42,7 @@ export class gmailRepository implements gmailRepoPort {
 
         const res = await this.prisma.PlatfromIntegration.findUnique({
             where: {
-                userId_provider: {
+                  userId_platform: {
                     userId: id,
                     provider: provider
                 }

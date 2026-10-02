@@ -67,10 +67,10 @@ export class InstagramController {
       {
         userId: instagram.userId,
         access_token: instagram.accessToken,
-        provider: "Instagram",
+        platform: "Instagram",
         expiresAt: calculateTokenExpiresAt(instagram.expiresIn! | 0),
         refreshToken: instagram.refreshToken,
-        platfromAccountId: instagram.instagramUserId
+        platformUserId: instagram.instagramUserId
       }
 
     );
@@ -143,7 +143,7 @@ export class InstagramController {
       "Instagram",
     );
 
-    if (!instagramUser.platfromAccountId) {
+    if (!instagramUser.platformUserId) {
       throw new NotFoundException(
         "Instagram account not connected",
       );
@@ -157,7 +157,7 @@ export class InstagramController {
 
     try {
       const result = await this.instagram.createContainer( {
-        platfromUserId: instagramUser.platfromAccountId,
+        platfromUserId: instagramUser.platformUserId,
         videoUrl: post.videoUrl,
         caption: post.caption,
         audioName: post.audioName,
@@ -177,7 +177,7 @@ export class InstagramController {
         success: true,
         data: {
           IgcontainerId: result.data.instagramContainerId,
-          instagramUserId: instagramUser.platfromAccountId,
+          instagramUserId: instagramUser.platformUserId,
         },
       };
     } catch (err: unknown) {

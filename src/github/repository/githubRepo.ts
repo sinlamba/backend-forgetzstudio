@@ -14,24 +14,24 @@ export class githubRepository implements githubRepoPort {
     
     async saveToken({ userId, accessToken, refreshToken, provider , platfromUserId}: saveTokens) {
                 
-        await this.prisma.PlatfromIntegration.create({
+        await this.prisma.PlatformIntegration.create({
             data: {
                 userId: userId,
-                provider: provider,
+                platform: provider,
                 accessToken: accessToken,
                 refreshToken: refreshToken || "",
-                platfromAccountId: platfromUserId
+                platformUserId: platfromUserId
             }
         })
 
     }
 
     async findUnique(userId: string, provider: string) {
-        return await this.prisma.PlatfromIntegration.findUnique({
+        return await this.prisma.PlatformIntegration.findUnique({
             where: {
-                userId_provider: {
+                userId_platform: {
                     userId: userId,
-                    provider: provider
+                    platform: provider
 
                 }
             }
