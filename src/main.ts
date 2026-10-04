@@ -10,7 +10,9 @@ async function bootstrap() {
   const logger = new Logger();
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 
+      'https://agent.forgetzstudio.com'
+    ],
   });
 
   app.use(bodyParser.json({ limit: '50mb' }));

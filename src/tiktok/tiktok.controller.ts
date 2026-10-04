@@ -6,7 +6,7 @@ import type { Request, Response } from 'express';
 @Controller('tiktok')
 export class TiktokController {
   constructor(private readonly tiktokService: TiktokService) { }
-
+@Public()
   @Get('/')
   async getOAuthUrl(@Req() req: Request, @Res() res: Response) {
     const userId = req.auth.userId;

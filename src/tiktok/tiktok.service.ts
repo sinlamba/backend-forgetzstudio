@@ -2,12 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { TIKTOK_CLIENT, type TiktokClientPort } from './port/tiktokClientPort';
 import { TIKTOK_REPO, type TiktokRepoPort } from './port/tiktokRepoPort';
 import { convertNumberToDate } from '../common//utils/convertNumberToDate';
-import { Cron } from '@nestjs/schedule';
-import { provider } from '../common/types';
-type AccessTokenResult = {
-    userId: string;
-    accessToken: string;
-};
+
 @Injectable()
 export class TiktokService {
   public isPublishing = true
@@ -32,7 +27,7 @@ export class TiktokService {
   }) {
     const result = await this.TiktokClient.exchangeCodeForToken(code);
 
-    const saveToken = await this.TiktokRepo.saveAccessToken({
+    await this.TiktokRepo.saveAccessToken({
       id: userId,
       platform: 'Tiktok',
       platformId: result.open_id,

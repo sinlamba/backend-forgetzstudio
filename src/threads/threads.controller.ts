@@ -9,7 +9,7 @@ import { MappersThreadsGlobal } from './mappers/threads.mapper';
 export class ThreadsController {
 
     constructor(private readonly ThreadsSevice: ThreadsService) { }
-
+@Public()
     @Get('/')
     async getUrlOauth(@Res() res: Response, @Req() req: Request) {
         const state = req.auth.userId
