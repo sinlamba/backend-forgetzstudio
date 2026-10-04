@@ -128,4 +128,23 @@ export class MediaPostRepo {
     },
   });
 }
+
+ async getUsersPlatform(clerkId: string):Promise<string[]> {
+    const id = (await this.getUsers(clerkId)).id
+   
+  
+  
+  const response = await this.Prisma.user.findUnique({
+    where: {
+      id:id
+    }
+   }) 
+   if(!response) {
+    throw new BadRequestException("user not found")
+   }
+    
+   return response.crossPlatfrom
+
+ }
+ 
 }

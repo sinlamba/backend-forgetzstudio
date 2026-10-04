@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { MediapostService } from './mediapost.service';
 import { createContainerDto } from './dto/createContainerDTO';
 import type { Request } from 'express';
@@ -36,6 +36,16 @@ async createContainer(
         user.id,
         scheduledAt!
     );
+}
+
+
+@Get('/getPlatformUsers')
+async getPlaformUsers(@Req() req:Request) {
+    const clerkId = req.auth.userId
+
+     return this.MediaPostService.getCrossPlatformUsers(clerkId)
+ 
+      
 }
 
 

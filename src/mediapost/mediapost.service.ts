@@ -338,4 +338,10 @@ export class MediapostService {
 
     return tokenResponse.accessToken;
   }
+
+
+   async getCrossPlatformUsers(clerkId: string) {
+    return this.mediaRepo.getUsersPlatform(clerkId)
+   }
+   
 }
